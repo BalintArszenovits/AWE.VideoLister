@@ -23,8 +23,17 @@ namespace AWE.VideoLister.BusinessLogic.Clients
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"{baseAddress}/api/video-promotion/v1/client/list{queryString}");
             request.Headers.Add("X-Requested-With", "XMLHttpRequest");
 
-            HttpResponseMessage response = await httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            HttpResponseMessage response = default(HttpResponseMessage);
+            try
+            {
+                response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
 
             string responseJson = await response.Content.ReadAsStringAsync();
             JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
@@ -35,8 +44,18 @@ namespace AWE.VideoLister.BusinessLogic.Clients
         public async Task<FileDataDto> GetFileAsync(string url)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-            HttpResponseMessage response = await httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            HttpResponseMessage response = default(HttpResponseMessage);
+
+            try
+            {
+                response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return null;
+            }
 
             return new FileDataDto()
             {

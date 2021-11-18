@@ -70,7 +70,8 @@ namespace AWE.VideoLister.BusinessLogic.Providers
             sb.Append($"forcedPerformers={filters.ForcedPerformers}&");
 
             //Add paging options
-            sb.Append($"limit={pagination.Limit}");
+            sb.Append($"limit={pagination.Limit}&");
+            sb.Append($"pageIndex={pagination.CurrentPage}&");
 
             //Defaults
             sb.Append("pstool=421_1&");
@@ -150,9 +151,12 @@ namespace AWE.VideoLister.BusinessLogic.Providers
 
                 //Write preview images to the disk
                 previewImageData.ForEach(fileData => {
-                    string previewImagePath = Path.Combine(tempFileDirectoryPath, $"{Guid.NewGuid()}{GetFileExtension(fileData.MediaType)}");
-                    File.WriteAllBytes(previewImagePath, fileData.Data);
-                    previewImagesPaths.Add(previewImagePath);
+                    if (fileData != null)
+                    {
+                        string previewImagePath = Path.Combine(tempFileDirectoryPath, $"{Guid.NewGuid()}{GetFileExtension(fileData.MediaType)}");
+                        File.WriteAllBytes(previewImagePath, fileData.Data);
+                        previewImagesPaths.Add(previewImagePath);
+                    }
                 });
 
                 videoViewModel.PreviewImages = previewImagesPaths;
@@ -166,7 +170,7 @@ namespace AWE.VideoLister.BusinessLogic.Providers
                 await Task.WhenAll(new List<Task>() { profileImageDataTask });
 
                 //If HTTP call was succesful, write profile image to the disk
-                if (profileImageDataTask.Status == TaskStatus.RanToCompletion)
+                if (profileImageDataTask.Result != null)
                 {
                     FileDataDto profileImageData = profileImageDataTask.Result;
                     string profileImagePath = Path.Combine(tempFileDirectoryPath, $"{Guid.NewGuid()}{GetFileExtension(profileImageData.MediaType)}");
