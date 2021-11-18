@@ -14,6 +14,7 @@ namespace AWE.VideoLister.BusinessLogic.Extensions
         /// </summary>
         public static void RegisterAweServices(this IServiceCollection services)
         {
+            services.AddSingleton<ILoggingProvider, LoggingProvider>();
             services.AddSingleton<IConfigurationProvider, ConfigurationProvider>();
             services.AddSingleton<ICredentialProvider, CredentialProvider>();
             services.AddSingleton<IAWEClient, AWEClient>();

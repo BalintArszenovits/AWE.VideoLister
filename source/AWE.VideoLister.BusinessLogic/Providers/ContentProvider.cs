@@ -12,12 +12,14 @@ namespace AWE.VideoLister.BusinessLogic.Providers
         private readonly string tempFileDirectoryPath;
         private readonly IAWEClient aweClient;
         private readonly ICredentialProvider credentialProvider;
+        private readonly ILoggingProvider loggingProvider;
 
-        public ContentProvider(IAWEClient aweClient, ICredentialProvider credentialProvider, IConfigurationProvider configurationProvider)
+        public ContentProvider(IAWEClient aweClient, ICredentialProvider credentialProvider, IConfigurationProvider configurationProvider, ILoggingProvider loggingProvider)
         {
             tempFileDirectoryPath = configurationProvider.TempFileDirectoryPath;
             this.aweClient = aweClient;
             this.credentialProvider = credentialProvider;
+            this.loggingProvider = loggingProvider;
         }
 
         /// <inheritdoc />
@@ -31,6 +33,15 @@ namespace AWE.VideoLister.BusinessLogic.Providers
 
             //Get credentials
             CredentialsDto credentials = await credentialProvider.GetCredentialsAsync();
+
+            if (credentials == null)
+            {
+                return new ContentListingViewModel()
+                {
+                    Videos = new List<VideoViewModel>(),
+                    Pagination = pagination,
+                };
+            }
 
             //Get query string
             string queryString = GetQueryString(filters, pagination, credentials.PSID, credentials.AccessKey);
@@ -134,6 +145,8 @@ namespace AWE.VideoLister.BusinessLogic.Providers
         /// </summary>
         private async Task<VideoViewModel> ResolveVideo(VideoContentDto videoDto)
         {
+            loggingProvider.LogInfo($"Fetch video: {videoDto.Title}");
+
             VideoViewModel videoViewModel = new VideoViewModel();
 
             //Get Preview images

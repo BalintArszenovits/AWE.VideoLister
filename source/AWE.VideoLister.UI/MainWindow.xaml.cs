@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using AWE.VideoLister.BusinessLogic.Providers;
 using AWE.VideoLister.ViewModel;
 using AWE.VideoLister.ViewModel.Enum;
@@ -31,12 +32,19 @@ namespace AWE.VideoLister.UI
         private const int ScrollViewerWidth = 753;
 
         private readonly IContentProvider contentProvider;
+        private readonly ILoggingProvider loggingProvider;
+        private readonly DispatcherTimer dispatcherTimer;
 
-        public MainWindow(IContentProvider contentProvider)
+        public MainWindow(IContentProvider contentProvider, ILoggingProvider loggingProvider)
         {
             InitializeComponent();
             InitializeComboBoxes();
+
+            dispatcherTimer = new DispatcherTimer();
+            InitializeLoggingTimer();
+
             this.contentProvider = contentProvider;
+            this.loggingProvider = loggingProvider;
         }
 
         private async void btnFetch_Click(object sender, RoutedEventArgs e)
@@ -101,6 +109,19 @@ namespace AWE.VideoLister.UI
             tbTotalPages.Text = contentListingViewModel.Pagination.TotalPages.ToString();
         }
 
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            string message = default(string);
+
+            if (loggingProvider.TryGetLastMessage(out message))
+            {
+                StringBuilder sb = new StringBuilder(tbLog.Text);
+                sb.Append($"{message}{Environment.NewLine}");
+                tbLog.Text = sb.ToString();
+                tbLog.ScrollToEnd();
+            }
+        }
+
         private void InitializeComboBoxes()
         {
             cbSexualOrientation.Items.Clear();
@@ -112,8 +133,17 @@ namespace AWE.VideoLister.UI
             cbQuality.SelectedIndex = 0;
         }
 
+        private void InitializeLoggingTimer()
+        {
+            dispatcherTimer.Tick += dispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
+            dispatcherTimer.Start();
+        }
+
         private async Task<ContentListingViewModel> FetchContentAsync(int pageNumber)
         {
+            loggingProvider.LogInfo("Fetch content...");
+
             FilteringViewModel filters = new FilteringViewModel()
             {
                 SexualOrientation = new List<SexualOrientation>() { (SexualOrientation)cbSexualOrientation.SelectedValue },
@@ -141,6 +171,8 @@ namespace AWE.VideoLister.UI
                     spContent.Children.Add(CreateStackPanelRow(item));
                 }
             }
+
+            loggingProvider.LogInfo("Fetching content finished");
         }
 
         private static StackPanel CreateStackPanelRow(VideoViewModel videoViewModel)

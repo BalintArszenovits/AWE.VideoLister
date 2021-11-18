@@ -10,11 +10,13 @@ namespace AWE.VideoLister.BusinessLogic.Clients
     {
         private readonly string baseAddress;
         private readonly HttpClient httpClient;
+        private readonly ILoggingProvider loggingProvider;
 
-        public AWEClient(IConfigurationProvider configurationProvider)
+        public AWEClient(IConfigurationProvider configurationProvider, ILoggingProvider loggingProvider)
         {
             baseAddress = configurationProvider.HttpClientBaseAddress;
             httpClient = new HttpClient();
+            this.loggingProvider = loggingProvider;
         }
 
         /// <inheritdoc />
@@ -29,9 +31,9 @@ namespace AWE.VideoLister.BusinessLogic.Clients
                 response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                Console.WriteLine(ex.ToString());
+                loggingProvider.LogError(ex.Message);
                 return null;
             }
 
@@ -51,9 +53,9 @@ namespace AWE.VideoLister.BusinessLogic.Clients
                 response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                Console.WriteLine(ex.ToString());
+                loggingProvider.LogError($"{ex.Message} - URL: {url}");
                 return null;
             }
 
