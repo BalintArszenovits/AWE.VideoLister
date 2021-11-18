@@ -38,6 +38,15 @@ namespace AWE.VideoLister.BusinessLogic.Providers
             //Get content listing
             ContentListingDto contentListingDto = await aweClient.GetContentListAsync(queryString);
 
+            if (contentListingDto == null)
+            {
+                return new ContentListingViewModel()
+                {
+                    Videos = new List<VideoViewModel>(),
+                    Pagination = pagination,
+                };
+            }
+
             //Resolve content listing viewmodel for UI
             ContentListingViewModel contentListingViewModel = await ResolveContent(contentListingDto);
 
@@ -187,7 +196,7 @@ namespace AWE.VideoLister.BusinessLogic.Providers
                 await Task.WhenAll(new List<Task>() { coverImageDataTask });
 
                 //If HTTP call was succesful, write cover image to the disk
-                if (coverImageDataTask.Status == TaskStatus.RanToCompletion)
+                if (coverImageDataTask.Result != null)
                 {
                     FileDataDto coverImageData = coverImageDataTask.Result;
                     string coverImagePath = Path.Combine(tempFileDirectoryPath, $"{Guid.NewGuid()}{GetFileExtension(coverImageData.MediaType)}");

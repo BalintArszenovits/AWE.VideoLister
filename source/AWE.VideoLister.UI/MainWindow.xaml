@@ -28,6 +28,10 @@
                 <TextBox Name="tbTotal" IsReadOnly="True" Width="30">1</TextBox>
                 <Label>Total pages: </Label>
                 <TextBox Name="tbTotalPages" IsReadOnly="True" Width="30">1</TextBox>
+                <Label>Sexual orientation: </Label>
+                <ComboBox Name="cbSexualOrientation" Width="100" />
+                <Label>Quality: </Label>
+                <ComboBox Name="cbQuality" Width="100" />
             </WrapPanel>
             <Label DockPanel.Dock="Bottom">Paging and filtering</Label>
           

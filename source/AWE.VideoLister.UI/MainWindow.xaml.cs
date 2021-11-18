@@ -35,6 +35,7 @@ namespace AWE.VideoLister.UI
         public MainWindow(IContentProvider contentProvider)
         {
             InitializeComponent();
+            InitializeComboBoxes();
             this.contentProvider = contentProvider;
         }
 
@@ -100,12 +101,23 @@ namespace AWE.VideoLister.UI
             tbTotalPages.Text = contentListingViewModel.Pagination.TotalPages.ToString();
         }
 
+        private void InitializeComboBoxes()
+        {
+            cbSexualOrientation.Items.Clear();
+            cbSexualOrientation.ItemsSource = Enum.GetValues(typeof(SexualOrientation)).Cast<SexualOrientation>();
+            cbSexualOrientation.SelectedIndex = 0;
+
+            cbQuality.Items.Clear();
+            cbQuality.ItemsSource = Enum.GetValues(typeof(Quality)).Cast<Quality>();
+            cbQuality.SelectedIndex = 0;
+        }
+
         private async Task<ContentListingViewModel> FetchContentAsync(int pageNumber)
         {
             FilteringViewModel filters = new FilteringViewModel()
             {
-                SexualOrientation = new List<SexualOrientation>() { SexualOrientation.Straight },
-                Quality = new List<Quality>() { Quality.HD },
+                SexualOrientation = new List<SexualOrientation>() { (SexualOrientation)cbSexualOrientation.SelectedValue },
+                Quality = new List<Quality>() { (Quality)cbQuality.SelectedValue },
                 ForcedPerformers = string.Empty
             };
 
